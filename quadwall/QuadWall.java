@@ -5,7 +5,7 @@ import robocode.*;
 // API help : https://robocode.sourceforge.io/docs/robocode/robocode/Robot.html
 
 /**
- * QuadWall - a robot by (your name here)
+ * QuadWall - a robot by gabriel-lw, ViniDefreyn and angeloyuna
  */
 public class QuadWall extends Robot
 {
