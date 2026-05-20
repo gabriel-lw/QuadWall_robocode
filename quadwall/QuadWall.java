@@ -1,8 +1,8 @@
 package quadwall;
 import robocode.*;
-//import java.awt.Color;
 import static robocode.util.Utils.normalAbsoluteAngle;
 import static robocode.util.Utils.normalRelativeAngle;
+import java.util.ArrayList;
 // API help : https://robocode.sourceforge.io/docs/robocode/robocode/Robot.html
 
 /**
@@ -27,7 +27,12 @@ public class QuadWall extends Robot
 	double radarAng;
 	int sentido =1; //sentido indo ou voltando da trackQuad
 
-//
+	// Inicializa as variáveis da quantidade de robôs em cada quadrante e a lista dos robôs já escaneados
+	double numFirstQuadrant = 0;
+	double numSecondQuadrant = 0;
+	double numThirdQuadrant = 0;
+	double numFourthQuadrant = 0;
+	ArrayList<String> names = new ArrayList<>();
 
 	// Método que direciona o robô a uma certa quantidade dependendo de seu ângulo
 	public void turn(double turn1, double turn2,  double turn3, double turn4) {
@@ -43,7 +48,92 @@ public class QuadWall extends Robot
 		}
 	}
 
+	// Método que escaneia o quadrante do oponente escaneado
+	public void scanOpponentQuadrant(ScannedRobotEvent e) {
 
+		double opponentDistance, opponentX, opponentY, quadrantBorderY, quadrantBorderX;
+		double a, b;
+		
+		// Cálcula as coordenadas do oponente escaneado
+		
+		opponentDistance = e.getDistance(); 		
+		
+		a = Math.sin(Math.toRadians(getHeading() + e.getBearing())) * opponentDistance;
+		b = Math.cos(Math.toRadians(getHeading() + e.getBearing())) * opponentDistance;
+		
+		opponentX = Math.abs(getX() + a);
+		opponentY = Math.abs(getY() + b);
+	
+		// Define as bordas de cada quadrante
+		quadrantBorderX = getBattleFieldWidth() / 2;
+		quadrantBorderY = getBattleFieldHeight() / 2;
+
+		// Se robô oponente já foi escaneado, printar essa mensagem
+		if (names.contains(e.getName())) {
+			System.out.println("Robô já contado.");
+		}
+		
+		// Se robô oponente já não foi escaneado, verificar qual quadrante ele está
+		else {
+		
+			// Se oponente robô estiver no primeiro quadrante
+			if (opponentX < quadrantBorderX &&  opponentY > quadrantBorderY) {
+				numFirstQuadrant += +1;
+				System.out.println("Robôs no primeiro quadrante: " + numFirstQuadrant);
+			}
+		
+			// Se oponente robô estiver no segundo quadrante
+			else if (opponentX > quadrantBorderX && opponentY > quadrantBorderY) {
+				numSecondQuadrant += +1;
+				System.out.println("Robôs no segundo quadrante: " + numSecondQuadrant);	
+			}	
+
+			// Se oponente robô estiver no terceiro quadrante
+			else if (opponentX < quadrantBorderX && opponentY < quadrantBorderY) {
+				numThirdQuadrant += +1;
+				System.out.println("Robôs no terceiro quadrante: " + numThirdQuadrant);
+			}
+		
+			// Se oponente robô estiver no quarto quadrante
+			else if (opponentX > quadrantBorderX && opponentY < quadrantBorderY) {
+				numFourthQuadrant += +1;
+				System.out.println("Robôs no quarto quadrante: " + numFourthQuadrant);
+			}
+			names.add(e.getName());
+		}	
+	}
+
+	public void scanNextQuadrant() {
+	
+			turnGunLeft(90);
+
+			numFirstQuadrant = 0;
+			numSecondQuadrant = 0;
+			numThirdQuadrant = 0;
+			numFourthQuadrant = 0;
+			names.clear();
+
+			turnGunRight(180);
+
+			if ((numFirstQuadrant > numSecondQuadrant) && (numFirstQuadrant > numThirdQuadrant) && (numFirstQuadrant > numFourthQuadrant)) {
+				System.out.println("Quadrante a se mover: Primeiro");
+
+			} else if ((numSecondQuadrant > numThirdQuadrant) && (numSecondQuadrant > numFourthQuadrant)) {
+				System.out.println("Quadrante a se mover: Segundo");
+
+			} else if (numThirdQuadrant > numFourthQuadrant) {
+				System.out.println("Quadrante a se mover: Terceiro");			
+
+			} else {
+				System.out.println("Quadrante a se mover: Quarto");
+			}
+			
+			turnGunLeft(90);
+	}
+	
+	/**
+	 * run: QuadWall's default behavior
+	 */	
 	public void run() {
 		// Initialization of the robot should be put here
 
@@ -130,7 +220,6 @@ public class QuadWall extends Robot
 				turn(90, 0, -90, 180);
 				moveDistance = distanceEastWall -50;
 				
-
 				if(distanceSouthWall <= distanceNorthWall )
 				{
 					//vai para leste sul, quad 2  ids 7, 6 , 5
@@ -230,6 +319,7 @@ public class QuadWall extends Robot
 
 			turnGunRight(180);
 			
+			scanNextQuadrant();
 			getNextPosition();
 
 			// Necessário implementar uma solução nos casos em que o robô se colide com um robô ao se mover para uma borda
@@ -327,6 +417,7 @@ public class QuadWall extends Robot
 	public void onScannedRobot(ScannedRobotEvent e) {
 		// Replace the next line with any behavior you would like
 		fire(1);
+		scanOpponentQuadrant(e);
 	}
 
 	/**
