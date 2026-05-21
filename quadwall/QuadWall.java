@@ -26,6 +26,10 @@ public class QuadWall extends Robot
 	double gunAng;
 	double radarAng;
 	int sentido =1; //sentido indo ou voltando da trackQuad
+	public boolean isOnHorizontalBorder;
+	public boolean isOnVerticalBorder;
+	String lastFiredName= " ";
+	int fireConfidence=0;
 
 	// Inicializa as variáveis da quantidade de robôs em cada quadrante e a lista dos robôs já escaneados
 	double numFirstQuadrant = 0;
@@ -117,6 +121,9 @@ public class QuadWall extends Robot
 
 			if ((numFirstQuadrant > numSecondQuadrant) && (numFirstQuadrant > numThirdQuadrant) && (numFirstQuadrant > numFourthQuadrant)) {
 				System.out.println("Quadrante a se mover: Primeiro");
+				/// entrar no subarray correspondente ao quadrantre, analisar as 3 posicoes e achar a mais proxima da atual
+				// nao permitir movimentaçao entre quadrantes nao adjacentes 
+				
 
 			} else if ((numSecondQuadrant > numThirdQuadrant) && (numSecondQuadrant > numFourthQuadrant)) {
 				System.out.println("Quadrante a se mover: Segundo");
@@ -135,12 +142,7 @@ public class QuadWall extends Robot
 	 * run: QuadWall's default behavior
 	 */	
 	public void run() {
-		// Initialization of the robot should be put here
-
-		// After trying out your robot, try uncommenting the import at the top,
-		// and the next line:
-
-		// setColors(Color.red,Color.blue,Color.green); // body,gun,radar
+	
 		
 			robotX = getX();
 			robotY = getY();
@@ -173,7 +175,6 @@ public class QuadWall extends Robot
 			trackList[7][0] = fieldWidth/2;
 			trackList[7][1] = DR;
 			
-
 			double moveDistance;
 			double distanceWestWall, distanceEastWall, distanceSouthWall, distanceNorthWall;
 				
@@ -310,6 +311,7 @@ public class QuadWall extends Robot
 					
 				}
 			}
+			
 
 			ahead(moveDistance);
 			
@@ -326,18 +328,23 @@ public class QuadWall extends Robot
 			
 		// Robot main loop
 		while(true) {
-			// Replace the next 4 lines with any behavior you would like
-			
+		
+			scanQuadrant();
 			robotX = getX();
 			robotY = getY();
 			robotAng = getHeading();
+			calcBorderExis();
 			
 			//como o movimento esta definido pela distancia exata do nextX e nextY, a margem de erro nao influencia mais a distancia
 			if(robotX >= nextX-45 && robotX<= nextX+45 && robotY >= nextY-45 && robotY <= nextY+45)
 			{
-				getNextPosition();	
+				getNextPosition();
+				//para a futura troca de quadrante
+				// if(changeCurrentQuadrant == true)
+				// getnextPosition para a borda mais proxima do proximo quadrante de interesse	
 			}
 			GoTo(nextX,nextY);
+			
 			
 		}
 	}
@@ -351,7 +358,7 @@ public class QuadWall extends Robot
 		if(idNextTrack >=2){
 			//inverte o sentido
 			sentido = -1;
-		}
+		} 
 		//quando chegar no limite do trilho (0), volta a subir de forma crescente ->(1) ->(2)
 		else if(idNextTrack <= 0)
 		{
@@ -360,24 +367,31 @@ public class QuadWall extends Robot
 		}
 	
 		idNextTrack += sentido;
+		//redefinir o angulo da arma se ja nao estiver mirando em um inimigo
 		
 		
 	}
 	
 
-		void GoTo(double NextX, double NextY)
+	void GoTo(double NextX, double NextY)
 	{
 		//caso use advanced considerar essas variaveis de controle
 		//Arrived = false;
 		//waitRotation = false;
 		
-		double moveDistance;
+		double moveDistance = (Math.max(robotX, nextX) - Math.min(robotX, nextX) > Math.max(robotY, nextY) - Math.min(robotY, nextY)) ? Math.max(robotX, nextX) - Math.min(robotX, nextX) : Math.max(robotY, nextY) - Math.min(robotY, nextY);
+	
+		///metodo para calcular e virar para o angulo apenas
+		turnAngleToXAndY(NextX, NextY); 
+		ahead(moveDistance);
+		
+	}
+	
+	void turnAngleToXAndY(double NextX, double NextY){
+		
 		double currentHeading = getHeading();
 		double angle = 57.296 * (normalAbsoluteAngle(Math.atan2(NextX- getX(), NextY - getY())));
-		
-		moveDistance = (Math.max(robotX, nextX) - Math.min(robotX, nextX) > Math.max(robotY, nextY) - Math.min(robotY, nextY)) ? Math.max(robotX, nextX) - Math.min(robotX, nextX) : Math.max(robotY, nextY) - Math.min(robotY, nextY);
 		double diff = Math.round(currentHeading - angle);
-		
 	
 		if(diff >0){
 			
@@ -397,27 +411,96 @@ public class QuadWall extends Robot
 				turnLeft(currentHeading + 360 - angle);
 			}else{
 				turnRight(Math.abs(diff));
-			}
-		}
-		
-		ahead(moveDistance);
-		
+			} 
+		} 
+
 	}
 	
 
 	void followQuadTrack(){
 		
 		//quando refatorar fazer a definiçao dos pontos do quadrante atual aqui
+ 
+	}
+	
+	void calcBorderExis(){
+		
+		double moveDistance;
+		double distanceWestWall, distanceEastWall, distanceSouthWall, distanceNorthWall;
+			
+		distanceWestWall = getX();
+		distanceEastWall = getBattleFieldWidth() - getX();
+		distanceSouthWall = getY();
+		distanceNorthWall = getBattleFieldHeight() - getY();
+		double nearest =Math.min(distanceWestWall, Math.min(distanceEastWall, Math.min(distanceSouthWall, distanceNorthWall)));
+	
+		if(distanceWestWall == nearest || distanceEastWall == nearest){
+			//horizontal
+			isOnHorizontalBorder =true;
+			isOnVerticalBorder =false;
+		}
+		else{
+			//vertical
+			isOnHorizontalBorder =false;
+			isOnVerticalBorder =true;
+		}
+	}
+	
 
+	void scanQuadrant(){
+		
+		//chamar em cada troca de pontos de trilho
+		//começar do angulo da parede anterior ate a parede atual,
+        //cerca de 90  graus cobre o quadrante inteiro a partir dos vertices de trilho
+		
 	}
 
-	/**
-	 * onScannedRobot: What to do when you see another robot
-	 */
 	public void onScannedRobot(ScannedRobotEvent e) {
-		// Replace the next line with any behavior you would like
-		fire(1);
+		
 		scanOpponentQuadrant(e);
+		double distancia = e.getDistance();
+	
+		if(distancia < 100){
+			fire(3); //16
+		}
+		else if( distancia < 200)
+		{
+			if(fireConfidence >= 3){
+				fire(3); //16
+			}
+			else{
+				fire(2); //10
+			}
+		}
+		else if(distancia <300)
+		{
+			if(fireConfidence >= 3){
+				fire(2); //10
+			}
+			else{
+				fire(1); //4
+			}
+		}
+		else if( (isOnHorizontalBorder && distancia < getBattleFieldWidth()/2) || (isOnVerticalBorder && distancia < getBattleFieldHeight()/2) ){
+				fire(0.5);  
+		}
+	}
+	
+	public void onBulletHit(BulletHitEvent e)
+	{
+		String name = e.getName();
+		if(lastFiredName.equals(name))
+		{
+			fireConfidence++;
+		}
+		else{
+			lastFiredName = name;
+			fireConfidence = 1; //nao errou mas nao tem a mesma confiança por ser inimigo diferente
+		}
+	}
+	
+	public void onBulletMissed(BulletMissedEvent e){
+		fireConfidence = 0;
 	}
 
 	/**
