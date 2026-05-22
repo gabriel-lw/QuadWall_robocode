@@ -329,7 +329,7 @@ public class QuadWall extends Robot
 		// Robot main loop
 		while(true) {
 		
-			scanQuadrant();
+	
 			robotX = getX();
 			robotY = getY();
 			robotAng = getHeading();
@@ -447,13 +447,8 @@ public class QuadWall extends Robot
 	}
 	
 
-	void scanQuadrant(){
 		
-		//chamar em cada troca de pontos de trilho
-		//começar do angulo da parede anterior ate a parede atual,
-        //cerca de 90  graus cobre o quadrante inteiro a partir dos vertices de trilho
-		
-	}
+	
 
 	public void onScannedRobot(ScannedRobotEvent e) {
 		
