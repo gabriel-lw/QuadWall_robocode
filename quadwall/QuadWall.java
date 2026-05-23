@@ -84,24 +84,81 @@ public class QuadWall extends Robot
 			if (opponentX < quadrantBorderX &&  opponentY > quadrantBorderY) {
 				numFirstQuadrant += +1;
 				System.out.println("Robôs no primeiro quadrante: " + numFirstQuadrant);
+				firstQuadrantNames.add(e.getName());
+			
+				if (secondQuadrantNames.contains(e.getName())) {
+					secondQuadrantNames.remove(e.getName());
+				}
+				
+				else if (thirdQuadrantNames.contains(e.getName())) {
+					thirdQuadrantNames.remove(e.getName());
+				}
+				
+				else if (fourthQuadrantNames.contains(e.getName())) {
+					fourthQuadrantNames.remove(e.getName());
+				}			
+				
 			}
+			
 		
 			// Se oponente robô estiver no segundo quadrante
 			else if (opponentX > quadrantBorderX && opponentY > quadrantBorderY) {
 				numSecondQuadrant += +1;
 				System.out.println("Robôs no segundo quadrante: " + numSecondQuadrant);	
+				secondQuadrantNames.add(e.getName());
+			
+				if (firstQuadrantNames.contains(e.getName())) {
+					firstQuadrantNames.remove(e.getName());
+				}
+				
+				else if (thirdQuadrantNames.contains(e.getName())) {
+					thirdQuadrantNames.remove(e.getName());
+				}
+				
+				else if (fourthQuadrantNames.contains(e.getName())) {
+					fourthQuadrantNames.remove(e.getName());
+				}
+
 			}	
 
 			// Se oponente robô estiver no terceiro quadrante
 			else if (opponentX < quadrantBorderX && opponentY < quadrantBorderY) {
 				numThirdQuadrant += +1;
 				System.out.println("Robôs no terceiro quadrante: " + numThirdQuadrant);
+				thirdQuadrantNames.add(e.getName());
+			
+				if (firstQuadrantNames.contains(e.getName())) {
+					firstQuadrantNames.remove(e.getName());
+				}
+					
+				else if (secondQuadrantNames.contains(e.getName())) {
+					secondQuadrantNames.remove(e.getName());
+				}
+				
+				else if (thirdQuadrantNames.contains(e.getName())) {
+					fourthQuadrantNames.remove(e.getName());
+				}
+				
 			}
-		
+			
 			// Se oponente robô estiver no quarto quadrante
 			else if (opponentX > quadrantBorderX && opponentY < quadrantBorderY) {
 				numFourthQuadrant += +1;
 				System.out.println("Robôs no quarto quadrante: " + numFourthQuadrant);
+				fourthQuadrantNames.add(e.getName());
+				
+				if (firstQuadrantNames.contains(e.getName())) {
+					firstQuadrantNames.remove(e.getName());
+				}
+				
+				else if (secondQuadrantNames.contains(e.getName())) {
+					secondQuadrantNames.remove(e.getName());
+				}
+				
+				else if (thirdQuadrantNames.contains(e.getName())) {
+					thirdQuadrantNames.remove(e.getName());
+				}
+				
 			}
 			names.add(e.getName());
 		}	
@@ -437,7 +494,7 @@ public class QuadWall extends Robot
 		}
 	
 		idNextTrack += sentido;
-		
+
 	}
 	
 
