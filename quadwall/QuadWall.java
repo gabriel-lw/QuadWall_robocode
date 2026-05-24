@@ -8,7 +8,7 @@ import java.util.ArrayList;
 /**
  * QuadWall - a robot by gabriel-lw, ViniDefreyn and angeloyuna
  */
-public class QuadWall extends Robot
+public class QuadWall extends AdvancedRobot
 {
 	double fieldWidth;
 	double fieldHeight;
@@ -140,7 +140,7 @@ public class QuadWall extends Robot
 				}
 				
 			}
-			
+		
 			// Se oponente robô estiver no quarto quadrante
 			else if (opponentX > quadrantBorderX && opponentY < quadrantBorderY) {
 				numFourthQuadrant += +1;
@@ -166,15 +166,16 @@ public class QuadWall extends Robot
 
 	public void scanNextQuadrant() {
 	
-			turnGunLeft(90);
-
 			numFirstQuadrant = 0;
 			numSecondQuadrant = 0;
 			numThirdQuadrant = 0;
 			numFourthQuadrant = 0;
 			names.clear();
+	
+			turnGunRight(120);
+			turnGunLeft(240);
+			turnGunRight(120);
 
-			turnGunRight(180);
 
 			if ((numFirstQuadrant > numSecondQuadrant) && (numFirstQuadrant > numThirdQuadrant) && (numFirstQuadrant > numFourthQuadrant)) {
 				System.out.println("Quadrante a se mover: Primeiro");
@@ -188,8 +189,6 @@ public class QuadWall extends Robot
 			} else {
 				System.out.println("Quadrante a se mover: Quarto");
 			}
-			
-			turnGunLeft(90);
 	}
 	
 	/**
@@ -377,8 +376,6 @@ public class QuadWall extends Robot
 			setAdjustGunForRobotTurn(true);
 
 			turnRight(90);
-
-			turnGunRight(180);
 			
 			getNextPosition();
 
@@ -403,78 +400,53 @@ public class QuadWall extends Robot
 		}
 	}
 	void adjustGunHeading() {
-			boolean nearWestWall = getX() <= 55;
-			boolean nearEastWall = getBattleFieldWidth() - getX() <= 55;
-			boolean nearSouthWall = getY() <= 55;
-			boolean nearNorthWall = getBattleFieldHeight() - getY() <= 55;
+			boolean nearWestWall = getX() <= 65;
+			boolean nearEastWall = getBattleFieldWidth() - getX() <= 65;
+			boolean nearSouthWall = getY() <= 65;
+			boolean nearNorthWall = getBattleFieldHeight() - getY() <= 65;
 
-			// Se estiver no canto do primeiro quadrante
-			if (nearWestWall && nearNorthWall) {
-				if (getGunHeading() >= 179.0 && getGunHeading() <= 181.0) {
-					turnGunLeft(90);
-				} else if (getGunHeading() >= 89.0 && getGunHeading() <= 91.0){
-					turnGunRight(90);
-				}
+			// Se estiver ao lado da borda norte
+			while ((!(nearWestWall) && !(nearEastWall) && nearNorthWall) && (!(getGunHeading() >= 179.0 && getGunHeading() <= 181.0))) {
+				setTurnGunRight(180 - getGunHeading());
+				execute();
+			}
+			
+			// Se estiver ao lado da borda sul,  antes do divisor entre quadrantes 3 e 4
+			while ((!(nearWestWall) && !(nearEastWall) && nearSouthWall) && (!(getGunHeading() >= 349.0 || getGunHeading() <= 10.0) && getX() < getBattleFieldWidth() / 2)) {
+				setTurnGunLeft(0 + getGunHeading());		
+				execute();		
+			}
+			
+			// Se estiver ao lado da borda sul, depois do divisor entre quadrantes 3 e 4
+			while ((!(nearWestWall) && !(nearEastWall) && nearSouthWall) && (!(getGunHeading() >= 349.0 || getGunHeading() < 1.0) && getX() > getBattleFieldWidth() / 2)) {
+				setTurnGunRight(360 - getGunHeading());		
+				execute();		
 			}
 
-			// Se estiver no canto do segundo quadrante
-			else if (nearEastWall && nearNorthWall) {
-				if (getGunHeading() >= 179.0 && getGunHeading() <= 181.0) {
-					turnGunRight(90);
-				} else if (getGunHeading() >= 269.0 && getGunHeading() <= 271.0){
-					turnGunLeft(90);
-				}
+
+			// Se estiver ao lado da borde oeste
+			while ((!(nearNorthWall) && !(nearSouthWall) && nearWestWall) && (!(getGunHeading() >= 89.0 && getGunHeading() <= 91.0))) {
+					setTurnGunRight(90 - getGunHeading());
+					execute();
 			}
-
-			// Se estiver no canto do terceiro quadrante
-			else if (nearWestWall && nearSouthWall) {
-				if (getGunHeading() >= 359.0) {
-					turnGunRight(90);
-				} else if (getGunHeading() >= 89.0 && getGunHeading() <= 91.0){
-					turnGunLeft(90);
-				}
-			}
-
-			// Se estiver no canto do quarto quadrante
-			else if (nearEastWall && nearSouthWall) {
-				if (getGunHeading() >= 359.0) {
-					turnGunLeft(90);
-
-				} else if (getGunHeading() >= 269.0 && getGunHeading() <= 271.0) {
-					turnGunRight(90);
-				}
+			
+			// Se estiver ao lado da borda leste
+			while ((!(nearNorthWall) && !(nearSouthWall) && nearEastWall) && (!(getGunHeading() >= 269.0 && getGunHeading() <= 271.00))) {
+				setTurnGunRight(270 - getGunHeading());
+				execute();
 			}
 			
 			// Se estiver no divisor dos quadrantes 1 e 2
-			if (nearNorthWall && (getX() < getBattleFieldWidth() / 2 + 55 && getX() > getBattleFieldWidth() / 2 - 55)) {
-				if (!(getGunHeading() >= 179.0 && getGunHeading() <= 181.0)) {
-					turnGunRight(180 - getGunHeading());
-				}
+			if (nearNorthWall && (getX() < getBattleFieldWidth() / 2 + 30 && getX() > getBattleFieldWidth() / 2 - 30)) {
 				scanNextQuadrant();
 			}
 			
 			// Se estiver no divisor dos quadrantes 3 e 4
-			else if (nearSouthWall && (getX() < getBattleFieldWidth() / 2 + 55 && getX() > getBattleFieldWidth() / 2 - 55)) {
-				if (!(getGunHeading() >= 359.0)) {
-					turnGunRight(360 - getGunHeading());
-				}
+			else if (nearSouthWall && (getX() < getBattleFieldWidth() / 2 + 30 && getX() > getBattleFieldWidth() / 2 - 30)) {
 				scanNextQuadrant();
+				
 			}
-			
-			// Se estiver no divisor dos quadrantes 1 e 3
-			else if (nearWestWall && (getY() < getBattleFieldHeight() / 2 + 55 && getY() > getBattleFieldHeight() / 2 - 55)) {
-				if (!(getGunHeading() >= 89.0 && getGunHeading() <= 91.0)) {
-					turnGunRight(90 - getGunHeading());
-				}
-			}
-
-			// Se estiver no divisor dos quadrantes 2 e 4
-			else if (nearEastWall && (getY() < getBattleFieldHeight() / 2 + 55 && getY() > getBattleFieldHeight() / 2 - 55)) {
-				if (!(getGunHeading() >= 269.0 && getGunHeading() <= 271.0)) {
-					turnGunRight(270 - getGunHeading());
-				}
-			}			
-	}	
+	}
 
 
 	void getNextPosition(){
@@ -533,7 +505,8 @@ public class QuadWall extends Robot
 			}
 		}
 		
-		ahead(moveDistance);
+		setAhead(moveDistance);
+		execute();
 		
 	}
 	
