@@ -8,7 +8,7 @@ import java.util.ArrayList;
 /**
  * QuadWall - a robot by gabriel-lw, ViniDefreyn and angeloyuna
  */
-public class QuadWall extends Robot
+public class QuadWall extends AdvancedRobot
 {
 	double fieldWidth;
 	double fieldHeight;
@@ -37,6 +37,10 @@ public class QuadWall extends Robot
 	double numThirdQuadrant = 0;
 	double numFourthQuadrant = 0;
 	ArrayList<String> names = new ArrayList<>();
+	ArrayList<String> firstQuadrantNames = new ArrayList<>();
+	ArrayList<String> secondQuadrantNames = new ArrayList<>();
+	ArrayList<String> thirdQuadrantNames = new ArrayList<>();
+	ArrayList<String> fourthQuadrantNames= new ArrayList<>();
 
 	// Método que direciona o robô a uma certa quantidade dependendo de seu ângulo
 	public void turn(double turn1, double turn2,  double turn3, double turn4) {
@@ -84,24 +88,81 @@ public class QuadWall extends Robot
 			if (opponentX < quadrantBorderX &&  opponentY > quadrantBorderY) {
 				numFirstQuadrant += +1;
 				System.out.println("Robôs no primeiro quadrante: " + numFirstQuadrant);
+				firstQuadrantNames.add(e.getName());
+			
+				if (secondQuadrantNames.contains(e.getName())) {
+					secondQuadrantNames.remove(e.getName());
+				}
+				
+				else if (thirdQuadrantNames.contains(e.getName())) {
+					thirdQuadrantNames.remove(e.getName());
+				}
+				
+				else if (fourthQuadrantNames.contains(e.getName())) {
+					fourthQuadrantNames.remove(e.getName());
+				}			
+				
 			}
+			
 		
 			// Se oponente robô estiver no segundo quadrante
 			else if (opponentX > quadrantBorderX && opponentY > quadrantBorderY) {
 				numSecondQuadrant += +1;
 				System.out.println("Robôs no segundo quadrante: " + numSecondQuadrant);	
+				secondQuadrantNames.add(e.getName());
+			
+				if (firstQuadrantNames.contains(e.getName())) {
+					firstQuadrantNames.remove(e.getName());
+				}
+				
+				else if (thirdQuadrantNames.contains(e.getName())) {
+					thirdQuadrantNames.remove(e.getName());
+				}
+				
+				else if (fourthQuadrantNames.contains(e.getName())) {
+					fourthQuadrantNames.remove(e.getName());
+				}
+
 			}	
 
 			// Se oponente robô estiver no terceiro quadrante
 			else if (opponentX < quadrantBorderX && opponentY < quadrantBorderY) {
 				numThirdQuadrant += +1;
 				System.out.println("Robôs no terceiro quadrante: " + numThirdQuadrant);
+				thirdQuadrantNames.add(e.getName());
+			
+				if (firstQuadrantNames.contains(e.getName())) {
+					firstQuadrantNames.remove(e.getName());
+				}
+					
+				else if (secondQuadrantNames.contains(e.getName())) {
+					secondQuadrantNames.remove(e.getName());
+				}
+				
+				else if (thirdQuadrantNames.contains(e.getName())) {
+					fourthQuadrantNames.remove(e.getName());
+				}
+				
 			}
 		
 			// Se oponente robô estiver no quarto quadrante
 			else if (opponentX > quadrantBorderX && opponentY < quadrantBorderY) {
 				numFourthQuadrant += +1;
 				System.out.println("Robôs no quarto quadrante: " + numFourthQuadrant);
+				fourthQuadrantNames.add(e.getName());
+				
+				if (firstQuadrantNames.contains(e.getName())) {
+					firstQuadrantNames.remove(e.getName());
+				}
+				
+				else if (secondQuadrantNames.contains(e.getName())) {
+					secondQuadrantNames.remove(e.getName());
+				}
+				
+				else if (thirdQuadrantNames.contains(e.getName())) {
+					thirdQuadrantNames.remove(e.getName());
+				}
+				
 			}
 			names.add(e.getName());
 		}	
@@ -109,15 +170,16 @@ public class QuadWall extends Robot
 
 	public void scanNextQuadrant() {
 	
-			turnGunLeft(90);
-
 			numFirstQuadrant = 0;
 			numSecondQuadrant = 0;
 			numThirdQuadrant = 0;
 			numFourthQuadrant = 0;
 			names.clear();
+	
+			turnGunRight(120);
+			turnGunLeft(240);
+			turnGunRight(120);
 
-			turnGunRight(180);
 
 			if ((numFirstQuadrant > numSecondQuadrant) && (numFirstQuadrant > numThirdQuadrant) && (numFirstQuadrant > numFourthQuadrant)) {
 				System.out.println("Quadrante a se mover: Primeiro");
@@ -134,8 +196,6 @@ public class QuadWall extends Robot
 			} else {
 				System.out.println("Quadrante a se mover: Quarto");
 			}
-			
-			turnGunLeft(90);
 	}
 	
 	/**
@@ -318,18 +378,17 @@ public class QuadWall extends Robot
 			setAdjustGunForRobotTurn(true);
 
 			turnRight(90);
-
-			turnGunRight(180);
 			
-			scanNextQuadrant();
 			getNextPosition();
 
 			// Necessário implementar uma solução nos casos em que o robô se colide com um robô ao se mover para uma borda
 			
 		// Robot main loop
 		while(true) {
-		
-	
+			// Replace the next 4 lines with any behavior you would like
+
+			adjustGunHeading();			
+
 			robotX = getX();
 			robotY = getY();
 			robotAng = getHeading();
@@ -344,11 +403,58 @@ public class QuadWall extends Robot
 				// getnextPosition para a borda mais proxima do proximo quadrante de interesse	
 			}
 			GoTo(nextX,nextY);
-			
-			
+
 		}
 	}
-	
+	void adjustGunHeading() {
+			boolean nearWestWall = getX() <= 65;
+			boolean nearEastWall = getBattleFieldWidth() - getX() <= 65;
+			boolean nearSouthWall = getY() <= 65;
+			boolean nearNorthWall = getBattleFieldHeight() - getY() <= 65;
+
+			// Se estiver ao lado da borda norte
+			while ((!(nearWestWall) && !(nearEastWall) && nearNorthWall) && (!(getGunHeading() >= 179.0 && getGunHeading() <= 181.0))) {
+				setTurnGunRight(180 - getGunHeading());
+				execute();
+			}
+			
+			// Se estiver ao lado da borda sul,  antes do divisor entre quadrantes 3 e 4
+			while ((!(nearWestWall) && !(nearEastWall) && nearSouthWall) && (!(getGunHeading() >= 349.0 || getGunHeading() <= 10.0) && getX() < getBattleFieldWidth() / 2)) {
+				setTurnGunLeft(0 + getGunHeading());		
+				execute();		
+			}
+			
+			// Se estiver ao lado da borda sul, depois do divisor entre quadrantes 3 e 4
+			while ((!(nearWestWall) && !(nearEastWall) && nearSouthWall) && (!(getGunHeading() >= 349.0 || getGunHeading() < 1.0) && getX() > getBattleFieldWidth() / 2)) {
+				setTurnGunRight(360 - getGunHeading());		
+				execute();		
+			}
+
+
+			// Se estiver ao lado da borde oeste
+			while ((!(nearNorthWall) && !(nearSouthWall) && nearWestWall) && (!(getGunHeading() >= 89.0 && getGunHeading() <= 91.0))) {
+					setTurnGunRight(90 - getGunHeading());
+					execute();
+			}
+			
+			// Se estiver ao lado da borda leste
+			while ((!(nearNorthWall) && !(nearSouthWall) && nearEastWall) && (!(getGunHeading() >= 269.0 && getGunHeading() <= 271.00))) {
+				setTurnGunRight(270 - getGunHeading());
+				execute();
+			}
+			
+			// Se estiver no divisor dos quadrantes 1 e 2
+			if (nearNorthWall && (getX() < getBattleFieldWidth() / 2 + 30 && getX() > getBattleFieldWidth() / 2 - 30)) {
+				scanNextQuadrant();
+			}
+			
+			// Se estiver no divisor dos quadrantes 3 e 4
+			else if (nearSouthWall && (getX() < getBattleFieldWidth() / 2 + 30 && getX() > getBattleFieldWidth() / 2 - 30)) {
+				scanNextQuadrant();
+				
+			}
+	}
+
 
 	void getNextPosition(){
 		nextX = trackQuad[idNextTrack][0];
@@ -383,8 +489,8 @@ public class QuadWall extends Robot
 	
 		///metodo para calcular e virar para o angulo apenas
 		turnAngleToXAndY(NextX, NextY); 
-		ahead(moveDistance);
-		
+		setAhead(moveDistance);
+		execute();		
 	}
 	
 	void turnAngleToXAndY(double NextX, double NextY){
@@ -411,9 +517,8 @@ public class QuadWall extends Robot
 				turnLeft(currentHeading + 360 - angle);
 			}else{
 				turnRight(Math.abs(diff));
-			} 
-		} 
-
+			}
+		}
 	}
 	
 
