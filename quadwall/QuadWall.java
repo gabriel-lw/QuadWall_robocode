@@ -207,16 +207,14 @@ public class QuadWall extends AdvancedRobot
 	}
 
 	public void scanNextQuadrant() {
-	
+
 			numFirstQuadrant = 0;
 			numSecondQuadrant = 0;
 			numThirdQuadrant = 0;
 			numFourthQuadrant = 0;
 			names.clear();
 	
-			turnGunRight(120);
-			turnGunLeft(240);
-			turnGunRight(120);
+			turnGunRight(360);
 
 			if ((numFirstQuadrant > numSecondQuadrant) && (numFirstQuadrant > numThirdQuadrant) && (numFirstQuadrant > numFourthQuadrant)) {
 				System.out.println("Quadrante a se mover: Primeiro");
@@ -385,9 +383,13 @@ public class QuadWall extends AdvancedRobot
 		// Robot main loop
 		while(true) {
 		
-			if(turns >10 && idNextTrack != 0)
-			{
-				
+			double quadrantBorderX = getBattleFieldWidth() / 2;
+			boolean nearSouthWall = getY() <= 65;
+			boolean nearNorthWall = getBattleFieldHeight() - getY() <= 65;
+
+
+			if ((getX() < quadrantBorderX + 2) && (getX() > quadrantBorderX - 2) && (nearSouthWall || nearNorthWall))
+			{	
 				scanQuadrants = true;
 				turns = 0;
 				scanNextQuadrant();
@@ -396,9 +398,10 @@ public class QuadWall extends AdvancedRobot
 		// por algum motivo da problema
 		//	if(!targetingEnemy){
 				//chamar o metodo de incremento do radar
+			else {
 				scanLimits();
 				System.out.println("currQuad:" +idCurrentQuad +"  currTrack:" + idCurrentTrack+ "   nextTrack:"+idNextTrack+ "    nextQuadTrack:" +nextQuadTrackId+ "     aimQuadrant:" +aimQuadrant);
-			
+			}
 				
 		//	}
 
@@ -502,57 +505,6 @@ public class QuadWall extends AdvancedRobot
 		turnGunRight(20*radarSentido);
 		execute();
 	}
-	
-
-	void adjustGunHeading() {
-			boolean nearWestWall = getX() <= 65;
-			boolean nearEastWall = getBattleFieldWidth() - getX() <= 65;
-			boolean nearSouthWall = getY() <= 65;
-			boolean nearNorthWall = getBattleFieldHeight() - getY() <= 65;
-
-			// Se estiver ao lado da borda norte
-			while ((!(nearWestWall) && !(nearEastWall) && nearNorthWall) && (!(getGunHeading() >= 179.0 && getGunHeading() <= 181.0))) {
-				setTurnGunRight(180 - getGunHeading());
-				execute();
-			}
-			
-			// Se estiver ao lado da borda sul,  antes do divisor entre quadrantes 3 e 4
-			while ((!(nearWestWall) && !(nearEastWall) && nearSouthWall) && (!(getGunHeading() >= 349.0 || getGunHeading() <= 10.0) && getX() < getBattleFieldWidth() / 2)) {
-				setTurnGunLeft(0 + getGunHeading());		
-				execute();		
-			}
-			
-			// Se estiver ao lado da borda sul, depois do divisor entre quadrantes 3 e 4
-			while ((!(nearWestWall) && !(nearEastWall) && nearSouthWall) && (!(getGunHeading() >= 349.0 || getGunHeading() < 1.0) && getX() > getBattleFieldWidth() / 2)) {
-				setTurnGunRight(360 - getGunHeading());		
-				execute();		
-			}
-
-
-			// Se estiver ao lado da borde oeste
-			while ((!(nearNorthWall) && !(nearSouthWall) && nearWestWall) && (!(getGunHeading() >= 89.0 && getGunHeading() <= 91.0))) {
-					setTurnGunRight(90 - getGunHeading());
-					execute();
-			}
-			
-			// Se estiver ao lado da borda leste
-			while ((!(nearNorthWall) && !(nearSouthWall) && nearEastWall) && (!(getGunHeading() >= 269.0 && getGunHeading() <= 271.00))) {
-				setTurnGunRight(270 - getGunHeading());
-				execute();
-			}
-			
-			// Se estiver no divisor dos quadrantes 1 e 2
-			if (nearNorthWall && (getX() < getBattleFieldWidth() / 2 + 30 && getX() > getBattleFieldWidth() / 2 - 30)) {
-				scanNextQuadrant();
-			}
-			
-			// Se estiver no divisor dos quadrantes 3 e 4
-			else if (nearSouthWall && (getX() < getBattleFieldWidth() / 2 + 30 && getX() > getBattleFieldWidth() / 2 - 30)) {
-				scanNextQuadrant();
-				
-			}
-	}
-	
 
 	void getNextPosition(){
 			//fazer idNextTrack começarr como o mais proximo, nao zero
@@ -661,14 +613,6 @@ public class QuadWall extends AdvancedRobot
 	//	if( movementExis == exisOfEnemy){
 			//mudar de camada
 			//verificar angulo oposto ao movimento do robo, usar mod 360 para normalizar
-		//}
-		
-		
-		
-		
-
-
-
 	}
 		
 	
@@ -756,8 +700,6 @@ public class QuadWall extends AdvancedRobot
 		
 	}
 	
-
-	
 	void calcBorderExis(){
 		
 		
@@ -796,19 +738,12 @@ public class QuadWall extends AdvancedRobot
 			isOnVerticalBorder =true;
 		}
 	}
-	
-
-		
-	
 
 	public void onScannedRobot(ScannedRobotEvent e) {
 		
-
-		
-
 	//	if(reconhecimento)
 		if(scanQuadrants){
-		//	doNothing();
+			scanOpponentQuadrant(e);
 		}
 		else{
 		
@@ -1017,14 +952,5 @@ public class QuadWall extends AdvancedRobot
 		*/
 
 		//borda núcleo?????? apenas se o mapa for maior doq 1000
-		
-
-
-
-
 	}
-
-
-
-
 }
