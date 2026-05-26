@@ -3,6 +3,10 @@ import robocode.*;
 import static robocode.util.Utils.normalAbsoluteAngle;
 import static robocode.util.Utils.normalRelativeAngle;
 import java.util.ArrayList;
+import robocode.HitRobotEvent;
+import robocode.util.Utils;
+//import java.awt.Color;
+
 // API help : https://robocode.sourceforge.io/docs/robocode/robocode/Robot.html
 
 /**
@@ -455,7 +459,6 @@ public class QuadWall extends AdvancedRobot
 			}
 	}
 
-
 	void getNextPosition(){
 		nextX = trackQuad[idNextTrack][0];
 		nextY = trackQuad[idNextTrack][1];
@@ -478,7 +481,6 @@ public class QuadWall extends AdvancedRobot
 		
 	}
 	
-
 	void GoTo(double NextX, double NextY)
 	{
 		//caso use advanced considerar essas variaveis de controle
@@ -551,10 +553,6 @@ public class QuadWall extends AdvancedRobot
 		}
 	}
 	
-
-		
-	
-
 	public void onScannedRobot(ScannedRobotEvent e) {
 		
 		scanOpponentQuadrant(e);
@@ -599,9 +597,38 @@ public class QuadWall extends AdvancedRobot
 		}
 	}
 	
-	public void onBulletMissed(BulletMissedEvent e){
+	public void onBulletMissed(BulletMissedEvent e) {
 		fireConfidence = 0;
+		
 	}
+		
+	public void onHitRobot(HitRobotEvent e) {
+
+    // Se fomos nós que batemos no inimigo
+    if (e.isMyFault()) {
+
+        // Vira o robô
+        setTurnRight(180);
+
+        // Alinha canhão para frente do robô
+        setTurnGunRight(Utils.normalRelativeAngleDegrees(getHeading() - getGunHeading()));
+        
+		// Anda para trás
+        setBack(100);
+
+        // Executa tudo simultaneamente
+        execute();
+    }
+
+    // Se o outro robô bateu em nós
+    else {
+
+        // Apenas move o radar para direita
+        setTurnGunRight(90);
+
+        execute();
+    }
+}
 
 	/**
 	 * onHitByBullet: What to do when you're hit by a bullet
