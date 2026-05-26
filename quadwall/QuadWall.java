@@ -892,10 +892,6 @@ public class QuadWall extends AdvancedRobot
     // Se o outro robô bateu em nós
     	else {
 
-        	// Apenas move o radar para direita
-        	setTurnGunRight(360);
-
-        	execute();
     	}
 	}
 
